@@ -36,11 +36,60 @@ def test_add_new_user(setup_database, connection):
     user = cursor.fetchone()
     assert user, "Пользователь должен быть добавлен в базу данных."
 
+def test_add_new_user_with_login(setup_database, connection):
+    """Тест добавления нового пользователя с существующим логином."""
+    add_user('testuser', 'testuser1@example.com', 'password1234')
+    
+    response = add_user('testuser', 'testuser2@example.com', 'password12345')
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM users WHERE username='testuser';")
+    user = cursor.fetchone()
+    assert not response, "Пользователь должен быть добавлен в базу данных."
+
+def test_auth_user(setup_database, connection):
+    """Тест auth нового пользователя."""
+    add_user('testuser2', 'testuser2@example.com', 'password123456789')
+    authenticate_user("testuser2","password123456789")
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM users WHERE username='testuser2';")
+    user = cursor.fetchone()
+    assert user, "Пользователь не должен быть авторизован."
+
+def test_auth_null_user(setup_database, connection):
+    """Тест auth null пользователя."""
+    add_user('testuser2', 'testuser2@example.com', 'password123456789')
+    resp=authenticate_user("testuser1","password123456789")
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM users WHERE username='testuser2';")
+    user = cursor.fetchone()
+    assert not resp, "Пользователь не должен быть авторизован."
+
+def test_auth_user_wrong_pass(setup_database, connection):
+    """Тест auth пользователя with wrong pass."""
+    add_user('testuser2', 'testuser2@example.com', 'password123456789')
+    resp=authenticate_user("testuser2","idkpassword")
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM users WHERE username='testuser2';")
+    user = cursor.fetchone()
+    assert not resp, "Пользователь не должен быть авторизован."
+
+def test_user_list(setup_database, connection):
+    """Тест auth пользователя with wrong pass."""
+    add_user('testuser1', 'testuser1@example.com', 'password1')
+    add_user('testuser2', 'testuser2@example.com', 'password2')
+    add_user('testuser3', 'testuser3@example.com', 'password3')
+
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM users WHERE username='testuser1';")
+    user = cursor.fetchone()
+    assert user, "Пользователь не должен быть авторизован."
+
+
 # Возможные варианты тестов:
 """
-Тест добавления пользователя с существующим логином.
-Тест успешной аутентификации пользователя.
-Тест аутентификации несуществующего пользователя.
-Тест аутентификации пользователя с неправильным паролем.
+Тест добавления пользователя с существующим логином. <
+Тест успешной аутентификации пользователя. <
+Тест аутентификации несуществующего пользователя.<
+Тест аутентификации пользователя с неправильным паролем.<
 Тест отображения списка пользователей.
 """
