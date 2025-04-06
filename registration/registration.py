@@ -28,14 +28,17 @@ def authenticate_user(username, password):
     with sqlite3.connect(DB_NAME) as conn:
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM users WHERE username=? AND password=?', (username, password))
-        return cursor.fetchone() is not None
+        return cursor.fetchone()
 
 def display_users():
     with sqlite3.connect(DB_NAME) as conn:
         cursor = conn.cursor()
         cursor.execute('SELECT username, email FROM users')
+        users = []
         for user in cursor.fetchall():
+            users.append(user[0])
             print(f"Логин: {user[0]}, Электронная почта: {user[1]}")
+        return users
 
 
 def user_choice():

@@ -36,6 +36,39 @@ def test_add_new_user(setup_database, connection):
     user = cursor.fetchone()
     assert user, "Пользователь должен быть добавлен в базу данных."
 
+def test_add_new_user_with_exists_login(setup_database, connection):
+    """Тест добавления нового пользователя."""
+    add_user('testuser', 'testuser@example.com', 'password123')
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM users WHERE username='testuser';")
+    user = cursor.fetchone()
+    assert user, "Пользователь должен быть добавлен в базу данных."
+
+def test_authenticate_user(setup_database, connection):
+    add_user('testuser', 'testuser@example.com', 'password123')
+    user = authenticate_user('testuser', 'password123')
+    assert user
+
+def test_authenticate_user_with_wrong_pass(setup_database, connection):
+    add_user('testuser', 'testuser@example.com', 'password123')
+    user = authenticate_user('testuser', 'password321')
+    assert user is None
+
+def test_authenticate_user_with_wrong_login(setup_database, connection):
+    add_user('testuser', 'testuser@example.com', 'password123')
+    user = authenticate_user('testuserr', 'password123')
+    assert user is None
+
+def test_display_users(setup_database, connection):
+    add_user('testuser', 'testuser@example.com', 'password123')
+    add_user('user', 'user@example.com', 'qwerty')
+    cursor = connection.cursor()
+    cursor.execute("SELECT username FROM users;")
+    db_users = cursor.fetchall()
+    users = display_users()
+
+    assert len(db_users) == len(users)
+
 # Возможные варианты тестов:
 """
 Тест добавления пользователя с существующим логином.
